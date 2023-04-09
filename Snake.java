@@ -1,94 +1,134 @@
-package com.snake;
-
 import java.awt.*;
 import java.util.ArrayList;
 
-class Snake {
-    ArrayList<Point> snake = new ArrayList<Point>();
-    int direction;
-    final int SNAKE_LEFT = 37;
-    final int SNAKE_UP = 38;
-    final int SNAKE_RIGHT = 39;
-    final int SNAKE_DOWN = 40;
-    final int GAME_FIELD_HEIGHT = 20; // не пиксели
-    final int GAME_FIELD_WIDTH = 30;
-    final String TITLE_OF_GAME = "Змейка";
+/**
+ * Class of the snake. 
+ * Snake moved to separate class, so in the future be able to create multiple instances at the same time
+ * @autor iliusvla
+ * @return snake to gameplay window
+ */
+public class Snake {
 
-    boolean gameOver = false;
-    //private int length;
+    public static final int DIR_POUSE = 0;
+    public static final int DIR_UP = 1;
+    public static final int DIR_RIGHT = 2;
+    public static final int DIR_DOWN = 3;
+    public static final int DIR_LEFT = 4;
+    private ArrayList<Point> body = new ArrayList<Point>();
+    private int bodySize;
+    private int direction = DIR_POUSE;
 
-    public Snake(int x, int y, int length, int direction) {
-        for (int i = 0; i < length; i++) {   //цикл создает объекты
-            Point point = new Point(x - i, y);
-            snake.add(point);
-        }
+    public int getDirection() {
+        return direction;
+    }
+
+    public void setDirection(int direction) {
         this.direction = direction;
     }
-    boolean isInsideSnake(int x, int y){
-        for(Point point :  snake){
-            if((point.getX() == x) && (point.getY() == y)) {
-                return true;
-            }
-        }
-        return false;
-    }
 
-
-    void paint(Graphics p) {
-        for (Point point : snake) {      //переберание объекта
-            point.paint(p);
-        }
-    }
-
-    boolean isFood(Point food) {
-        return ((snake.get(0).getX() == food.getX()) && (snake.get(0).getY() == food.getY()));
-
-    }
-    void move() {
-        int x = snake.get(0).getX();
-        int y = snake.get(0).getY();
-
-        if (direction == SNAKE_LEFT) {
-            x--;
-        }
-        if (direction == SNAKE_RIGHT) {
-            x++;
-        }
-        if (direction == SNAKE_UP) {
-            y--;
-        }
-        if (direction == SNAKE_DOWN) {
-            y++;
-        }
-        if (x > GAME_FIELD_WIDTH - 1) {                 //контроль поля
-            x = 0;
-        }
-        if (x < 0) {
-            x = GAME_FIELD_WIDTH - 1;
-        }
-        if (y > GAME_FIELD_HEIGHT - 1) {
-            y = 0;
-        }
-        if (y < 0) {
-            y = GAME_FIELD_HEIGHT - 1;
-        }
-
-        gameOver = isInsideSnake(x,y);      // игра окончена
-
-        snake.add(0, new Point(x, y));
-
-        if (isFood(food)) {
-            food.eat();
-            frame.setTitle(TITLE_OF_GAME + " Счет: " + snake.size());
-        } else {
-            snake.remove(snake.size() - 1);             //удаление хвоста
+    /**
+     * @param x0 X-coordinates
+     * @param y0 Y-coordinates
+     * @param sz Size of snake
+     */
+    Snake(int x0, int y0, int sz) {
+        bodySize = sz;
+        int x = x0 * sz + 2;
+        int y = y0 * sz + 2;
+        for (int i = 0; i < 1; i++) {
+            body.add(new Point(x, y));
         }
     }
 
-    void setDirection(int direction) {
-        if ((direction >= SNAKE_LEFT) && (direction <= SNAKE_DOWN)) {
-            if(Math.abs(this.direction - direction) != 2){ //исправление проблемы с движением влево и вправо
-                this.direction = direction;
+    public ArrayList<Point> getBody() {
+        return body;
+    }
+
+    /**
+     * Render snake on gameplay window(dialog)
+     * @param g2 Graphics2D
+     */
+    public void paint(Graphics2D g2) {
+        for (Point p : body) {
+            g2.setColor(Color.blue);
+            g2.fillArc(p.x, p.y, bodySize, bodySize, 0, 360);
+            g2.setColor(Color.magenta);
+            g2.drawArc(p.x, p.y, bodySize, bodySize, 0, 360);
+        }
+        Point p = body.get(body.size() - 1);
+        g2.setColor(Color.black);
+        g2.fillArc(p.x + bodySize / 2 - 2, p.y + bodySize / 2 - 2, 4, 4, 0, 360);
+        g2.setColor(Color.white);
+        g2.fillArc(p.x + bodySize / 2 - 1, p.y + bodySize / 2 - 1, 2, 2, 0, 360);
+    }
+
+    /**
+     * Return new snake position and void checking for self-eating
+     * @return New snake position
+     */
+    public Point move() {
+        Point last = body.get(body.size() - 1);
+        Point pp = last;
+        switch (direction) {
+            case DIR_POUSE:
+                break;
+            case DIR_UP:
+                body.remove(0);
+                pp = new Point(last.x, last.y - bodySize);
+                body.add(pp);
+                delete();
+                break;
+            case DIR_RIGHT:
+                body.remove(0);
+                pp = new Point(last.x + bodySize, last.y);
+                body.add(pp);
+                delete();
+                break;
+            case DIR_DOWN:
+                body.remove(0);
+                pp = new Point(last.x, last.y + bodySize);
+                body.add(pp);
+                delete();
+                break;
+            case DIR_LEFT:
+                body.remove(0);
+                pp = new Point(last.x - bodySize, last.y);
+                body.add(pp);
+                delete();
+                break;
+        }
+        return pp;
+    }
+
+    /**
+     *
+     * @return time for Thread.sleep
+     * @link SnakeGame#SnakeGame()
+     * @see SnakeGame#SnakeGame
+     */
+    public int getSpeed() {
+        return 410;
+    }
+
+    /**
+     * Add fruit to snake  
+     * @link SnakeGame#gameCycle()
+     * @see SnakeGame#gameCycle
+     *
+     */
+    public void expand() {
+        body.add(0, new Point(body.get(0).x, body.get(0).y));
+    }
+
+    /**
+     * Check self-eating of snake
+     * @link move
+     * @see  move()
+     */
+    public void delete() {
+        for (int i = 1; i < body.size(); i++) {
+            if (body.get(i).equals(body.get(0))) {
+                body.removeAll(body.subList(i, body.size()));
             }
         }
     }
