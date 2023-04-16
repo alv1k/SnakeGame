@@ -1,135 +1,38 @@
+import java.awt.*;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.util.ArrayList;
+import javax.swing.*;
+import javax.swing.border.BevelBorder;
 
-import java.awt.event.*;
-import javax.swing.JButton;
-import javax.swing.JDialog;
-import javax.swing.JFrame;
-import javax.swing.JOptionPane;
-
-/**
- * Main class.
- * The game window. The window contains the gameplay window, highscores window, listening  the keyboard and sends commands
- * @author Vlad
- */
 public class SnakeApp {
 
+
+    //класс для окна запуска
     public static void main(String[] args) {
         new SnakeApp().startGraphicInterface();
     }
+    public void startGraphicInterface(){
+        //метод для запуска окна
 
-    /**
-     * Open the main menu
-     *  @link SnakeApp#startGame()
-     * @see SnakeApp#startGame
-     */
-    public void startGraphicInterface() {
-        JFrame myWindow = new JFrame("Snake menu");
-        myWindow.setLayout(null);
-        myWindow.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        myWindow.setSize(270, 240);
-        myWindow.setVisible(true);
+        //создать JFrame
+        //установить для него закрытие по крестику, размер, видимость
+        JFrame frame = new JFrame("Snake game");
+        frame.setSize(550,550);
+        frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+        //frame.setResizable(false);
 
-        final JButton GO = new JButton("Start game");
-        GO.setLocation(30, 30);
-        GO.setSize(200, 40);
-        myWindow.add(GO);
-
-        GO.addActionListener(new ActionListener() {
-
-            public void actionPerformed(ActionEvent event) {//Start the game
-                startGame();//Zavolame SnakeDialog - START GAME!
+        SnakeGame field = new SnakeGame();
+        frame.add(field);
+        field.newGame();
+        frame.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent e) {
+                field.processKey(e);
             }
         });
-
-        final JButton highscore = new JButton("Highscore");
-        highscore.setLocation(30, 80);
-        highscore.setSize(200, 40);
-        myWindow.add(highscore);
-        myWindow.setResizable(false);
-
-        highscore.addActionListener(new ActionListener() {
-
-            public void actionPerformed(ActionEvent event) {
-                //game.highscores.HighscoreManager hm = new game.highscores.HighscoreManager();
-                //JOptionPane.showMessageDialog(highscore, hm.getHighscoreString(), "Highscores", JOptionPane.WARNING_MESSAGE);//Show highscores from HighscoreManager as Warning Message
-            }
-        });
-
-        final JButton exit = new JButton("Exit");
-        exit.setLocation(30, 130);
-        exit.setSize(200, 40);
-        myWindow.add(exit);
-
-        exit.addActionListener(new ActionListener() {
-
-            public void actionPerformed(ActionEvent event) {
-                JOptionPane.showMessageDialog(exit, "Goodbye!", "OK", JOptionPane.WARNING_MESSAGE);
-                System.exit(0);
-            }
-        });
+        frame.setVisible(true);
+        //осталось сделать поле, змейку
     }
 
-    /**
-     * Opening of the game window. Saving score(if user want).
-     * @link SnakeGame()
-     * @see SnakeGame
-     */
-    public void startGame() {
-        JDialog dlg = new JDialog((JFrame) null, "Snake v.over9000");//Game as Dialog
-        dlg.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
-
-        final SnakeGame sn = new SnakeGame();//If you start the game,
-        dlg.getContentPane().add(sn);
-        sn.newGame();
-        dlg.addKeyListener(new KeyAdapter() {
-
-            public void keyPressed(KeyEvent ev) {
-                sn.processKey(ev);
-            }
-        });
-        dlg.setVisible(true);
-        dlg.pack();
-        dlg.setResizable(true);
-        dlg.setLocation(300, 200);
-        dlg.addWindowListener(new WindowListener() {
-
-            public void windowActivated(WindowEvent event) {
-            }
-
-            public void windowClosed(WindowEvent event) {
-            }
-
-            public void windowClosing(WindowEvent event) {
-                Object[] options = {"Yes", "No!"};
-                int n = JOptionPane.showOptionDialog(event.getWindow(), "Save score?",//You can save the score
-                        "Snake", JOptionPane.YES_NO_OPTION,
-                        JOptionPane.QUESTION_MESSAGE, null, options,
-                        options[0]);
-                if (n == 0) {
-                    Object[] options1 = {"Yes", "No!"};
-                    String name = "Anonymouse";
-                    JOptionPane k = new JOptionPane();
-                    JDialog dialog = k.createDialog(null, "Score");
-
-                    name = k.showInputDialog(null, "Your name", "Score", 1);
-
-                    event.getWindow().dispose();//Close the snake-game window
-
-                } else {
-                    event.getWindow().dispose();//Close the snake-game window
-                }
-            }
-
-            public void windowDeactivated(WindowEvent event) {
-            }
-
-            public void windowDeiconified(WindowEvent event) {
-            }
-
-            public void windowIconified(WindowEvent event) {
-            }
-
-            public void windowOpened(WindowEvent event) {
-            }
-        });
-    }
 }
